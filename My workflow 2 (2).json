@@ -1,0 +1,252 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3cd547ad-ee14-483b-8e2d-65e7207e36fb",
+      "name": "Webhook",
+      "webhookId": "0ce107c6-bce0-49cc-9172-a1f599d76b5a"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=User Message: {{ $('Webhook').item.json.content }}\n\nAvailable Slots in Database:\n{{ $('Get row(s) in sheet').all().map(item => item.json.time_slot).join(', ') }}\n\nInstructions:\n- Provide a single, direct, professional response.\n- Only offer or confirm time slots listed under \"Available Slots in Database\".\n- If the requested slot is not available, politely suggest the available options.\n- Do not repeat or rephrase your answer.\n\nINSTRUCTIONS:\n1. Only offer or confirm time slots listed in the \"Available Slots in Database\".\n2. If the user requests a slot not in the list, politely inform them it is unavailable and suggest the available options.\n3. Keep the response natural, professional, and short."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "5642240b-bd75-4ba3-91e2-f509604bc9ec",
+      "name": "Message a model",
+      "executeOnce": true,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "0UZebp9h9s4buBe1",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1T12hE6NLtLp_qLG7RIUQJBW3KOu1KF-_H7XeyhmAc4E",
+          "mode": "list",
+          "cachedResultName": "Resturantent sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1T12hE6NLtLp_qLG7RIUQJBW3KOu1KF-_H7XeyhmAc4E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1T12hE6NLtLp_qLG7RIUQJBW3KOu1KF-_H7XeyhmAc4E/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user ": "={{ $('Webhook').item.json.body.user }}",
+            "message": "={{ $('Webhook').item.json.body.content }}",
+            "AI response": "={{ $json.content.parts[0].text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "user ",
+              "displayName": "user ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "AI response",
+              "displayName": "AI response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        768,
+        0
+      ],
+      "id": "06e30dde-602e-473c-aa37-61acab2c5c14",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MifK3rKXpo0jjrvy",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1534970935575187497/39nJuLVLl9p8iohQXhmTKj5Tp8pZqByXBUCZuc0qXlE_8GbyTDPDVerzJXN9j1fj-o7d",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"{{ $('Message a model').item.json.content.parts[0].text }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        976,
+        0
+      ],
+      "id": "a818dec0-4bae-4c64-9148-00307a0c7185",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1uD_vIkLm9q6YB8e9muBtcKOezOTWkdK2szWhjDSOXgY",
+          "mode": "list",
+          "cachedResultName": "booking slots",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uD_vIkLm9q6YB8e9muBtcKOezOTWkdK2szWhjDSOXgY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uD_vIkLm9q6YB8e9muBtcKOezOTWkdK2szWhjDSOXgY/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "available"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "7d33c869-8003-49e4-bfd7-056b78aa756c",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MifK3rKXpo0jjrvy",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "276da913-79a5-4c77-83a8-586bfb04830f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "14e3a57a4746f47e4f6b4b2dec7a08c890bafdc519202bdb4daa3e0774cf9d20"
+  },
+  "nodeGroups": [],
+  "id": "AuQxQc1VbGhNHgRi",
+  "tags": []
+}
